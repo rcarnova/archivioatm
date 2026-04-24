@@ -1400,49 +1400,83 @@ async function sendMessage() {
 }
 
 function generateResponse(query) {
-  const q = query.toLowerCase();
+  const q = query.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // strip accents for matching
 
-  if (q.includes('evolut') || q.includes('ruol') || q.includes('80 anni') || q.includes('cambi')) {
-    return { ...archivioData.responses["evoluzione ruoli"], query };
-  }
-  if (q.includes('lucia') || q.includes('moreschi') || q.includes('prima donna tranv') || q.includes('prima tranviera')) {
-    return { ...archivioData.responses["lucia moreschi"], query };
-  }
-  if (q.includes('fotografico') || q.includes('fotografi') || q.includes('immagin') || q.includes('ritratt')) {
-    return { ...archivioData.responses["archivio fotografico"], query };
-  }
-  if (q.includes('barrier') || q.includes('anni \'40') || q.includes('anni 40') || q.includes('ostacol') || q.includes('discrimin')) {
-    return { ...archivioData.responses["barriere anni 40"], query };
-  }
-  if (q.includes('pari') || q.includes('associazione') && q.includes('atm')) {
-    return { ...archivioData.responses["pari associazione"], query };
-  }
-  if (q.includes('violenza') || q.includes('consigliera') || q.includes('1522') || q.includes('contrast')) {
-    return { ...archivioData.responses["violenza genere atm"], query };
-  }
-  if (q.includes('lotto') || q.includes('fermata') || q.includes('lotta')) {
-    return { ...archivioData.responses["lotto"], query };
-  }
-  if (q.includes('divisa') || q.includes('campagna') || q.includes('unisce')) {
-    return { ...archivioData.responses["campagna divisa"], query };
-  }
-  if (q.includes('2025') || q.includes('situazione attuale') || q.includes('oggi') || q.includes('quante persone') || q.includes('formaz')) {
-    return { ...archivioData.responses["pari associazione"], query };
-  }
-  if (q.includes('carla fracci') || q.includes('fracci')) {
-    return {
-      text: `Carla Fracci appare nell'archivio ATM in un documento straordinario: il <strong>Notiziario ATM del 20 novembre 1958</strong>, con la foto sul tram guidato dal padre Luigi Fracci, tranviere ATM.
+  // Scoring system: each response key gets a score based on keyword matches
+  const rules = [
+    {
+      key: "evoluzione ruoli",
+      keywords: ['evolut','ruol','80 anni','cambi','storia','percorso','traiettori','come sono','nel tempo','dagli anni','decenn','progressi']
+    },
+    {
+      key: "lucia moreschi",
+      keywords: ['lucia','moreschi','prima donna tranv','prima tranviera','prima conducente','prima autista','prima donna che','1943','ritratt']
+    },
+    {
+      key: "archivio fotografico",
+      keywords: ['fotograf','foto','immagin','ritratt','visiv','scatt','archivio fotograf','mostrami','mostra','vedere','guardare']
+    },
+    {
+      key: "barriere anni 40",
+      keywords: ['barrier','ostacol','discrimin','anni 40','anni40','difficolt','problem','resistenz','sfid','pregiudiz','contro','divieto']
+    },
+    {
+      key: "pari associazione",
+      keywords: ['pari','associazion','network','aziend','fondatric','53 impres','formazione','webinar','8300','8.300','8mila','insieme contro','simona zandon']
+    },
+    {
+      key: "violenza genere atm",
+      keywords: ['violenza','consigliera','1522','contrasto','abuso','molesti','tutela','protezione','sicurezza','policy','codice condotta','fiducia','whistleblow']
+    },
+    {
+      key: "lotto",
+      keywords: ['lotto','fermata lotto','fermata m1','fermata metro','campagna lotto','lotta contro','25 novembre','giornata','manifesto']
+    },
+    {
+      key: "campagna divisa",
+      keywords: ['divisa','unisce','divisa che unisce','campagna 2024','giugno 2024','comunicazione']
+    },
+    {
+      key: "fracci",
+      keywords: ['fracci','carla','ballerin','scala','1958','notiziario','ascensore social','padre','luigi']
+    }
+  ];
 
-È un documento che racconta ATM come ascensore sociale: il lavoro del tranviere — fisico, quotidiano, spesso invisibile — che rende possibile il sogno della figlia. La stessa Carla, in un'intervista, descrive come la tessera tranviaria gratuita del padre le permettesse di raggiungere la Scala dalla periferia.
+  // Score each rule
+  let best = null;
+  let bestScore = 0;
+
+  for (const rule of rules) {
+    const score = rule.keywords.filter(kw => q.includes(kw)).length;
+    if (score > bestScore) {
+      bestScore = score;
+      best = rule.key;
+    }
+  }
+
+  // Return matched response if score >= 1
+  if (bestScore >= 1) {
+    if (best === "fracci") {
+      return {
+        text: `Carla Fracci appare nell'archivio ATM in un documento straordinario: il <strong>Notiziario ATM del 20 novembre 1958</strong>, con la foto sul tram guidato dal padre Luigi Fracci, tranviere ATM.
+
+È un documento che racconta ATM come ascensore sociale: il lavoro del tranviere — fisico, quotidiano, spesso invisibile — che rende possibile il sogno della figlia. La stessa Carla descriveva come la tessera tranviaria gratuita del padre le permettesse di raggiungere la Scala dalla periferia.
 
 Per le tematiche di genere, questo documento ha un doppio valore: mostra sia la centralità del lavoratore ATM (maschile) come pilastro familiare, sia come la mobilità femminile — geografica e professionale — dipendesse da infrastrutture non ancora pensate "per" le donne.`,
-      cards: [4, 3],
-      showTimeline: false,
-      query
-    };
+        cards: [4, 3],
+        showTimeline: false,
+        query
+      };
+    }
+    if (best === "pari associazione" && (q.includes('violenza') || q.includes('oggi') || q.includes('2025') || q.includes('attual') || q.includes('formaz'))) {
+      // If PARI but with a "today/violence" angle, blend pari + violenza
+      return { ...archivioData.responses["violenza genere atm"], query };
+    }
+    return { ...archivioData.responses[best], query };
   }
 
-  // Default: use Claude API for unknown queries
+  // No keyword match — send to Claude API with full context
   return { ...archivioData.responses["default"], query, useAPI: true };
 }
 
@@ -1484,18 +1518,13 @@ function addAssistantMessage(response, query) {
 
   let html = `<div class="message-bubble">`;
 
-  // If needs real API call
+  // If needs real API call — render empty container, fill with API response
   if (response.useAPI) {
-    html += `<div id="api-response-${Date.now()}">${response.text}</div>`;
-    // We'll fill this with real API
     const msgId = 'api-' + Date.now();
-    html = `<div class="message-bubble"><div id="${msgId}">${response.text}</div>`;
-    div.innerHTML = html + buildCardsHTML(response.cards) + `</div><div class="message-meta">ARCHIVIO ATM · ${new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}</div>`;
+    div.innerHTML = `<div class="message-bubble"><div id="${msgId}" style="min-height:40px;"></div></div><div class="message-meta">ARCHIVIO ATM · ${new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}</div>`;
     area.appendChild(div);
     area.scrollTop = area.scrollHeight;
-
-    // Call real API
-    callClaudeAPI(query, msgId);
+    callClaudeAPI(query, msgId, div, area);
     return;
   }
 
@@ -1582,9 +1611,12 @@ function buildTimelineHTML() {
   return html;
 }
 
-async function callClaudeAPI(query, elementId) {
+async function callClaudeAPI(query, elementId, msgDiv, area) {
   const el = document.getElementById(elementId);
   if (!el) return;
+
+  // Show inline typing dots while waiting
+  el.innerHTML = `<span style="display:inline-flex;gap:4px;align-items:center;padding:4px 0;"><span style="width:6px;height:6px;border-radius:50%;background:var(--atm-orange);animation:typingPulse 1.2s infinite;display:inline-block;"></span><span style="width:6px;height:6px;border-radius:50%;background:var(--atm-orange);animation:typingPulse 1.2s infinite 0.2s;display:inline-block;"></span><span style="width:6px;height:6px;border-radius:50%;background:var(--atm-orange);animation:typingPulse 1.2s infinite 0.4s;display:inline-block;"></span><span style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--atm-gray);margin-left:8px;letter-spacing:1px;">ricerca nell'archivio…</span></span>`;
 
   try {
     const systemPrompt = `Sei un esperto archivista specializzato nella storia delle donne nel trasporto pubblico milanese, specificamente in ATM (Azienda Trasporti Milanesi). 
@@ -1630,10 +1662,35 @@ Rispondi in italiano, in modo preciso e archivistico, citando sempre le fonti. U
 
     const data = await response.json();
     if (data.content && data.content[0]) {
-      el.innerHTML = data.content[0].text.replace(/\n\n/g, '</p><p>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+      const text = data.content[0].text
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+      el.innerHTML = '<p>' + text + '</p>';
+
+      // Pick semantically relevant cards based on query keywords
+      const q = query.toLowerCase();
+      let cardIds = [];
+      if (q.includes('lucia') || q.includes('1943') || q.includes('tranvier')) cardIds = [2, 1];
+      else if (q.includes('bigliett') || q.includes('1941') || q.includes('guerra')) cardIds = [1, 2];
+      else if (q.includes('fracci') || q.includes('1958')) cardIds = [4, 3];
+      else if (q.includes('1970') || q.includes('settant')) cardIds = [5, 6];
+      else if (q.includes('lotto') || q.includes('campagna') || q.includes('25 nov')) cardIds = [11, 9];
+      else if (q.includes('pari') || q.includes('formaz') || q.includes('webinar')) cardIds = [10, 8];
+      else if (q.includes('violenza') || q.includes('tutel') || q.includes('consiglier')) cardIds = [8, 9, 10];
+      else if (q.includes('oggi') || q.includes('2025') || q.includes('attual')) cardIds = [10, 8, 11];
+      else cardIds = [2, 5, 10]; // generic: show historical + contemporary
+
+      // Append cards after the bubble
+      const bubble = msgDiv.querySelector('.message-bubble');
+      if (bubble && cardIds.length > 0) {
+        bubble.insertAdjacentHTML('beforeend', buildCardsHTML(cardIds));
+      }
+      if (area) area.scrollTop = area.scrollHeight;
     }
   } catch(err) {
     console.error('API error:', err);
+    el.innerHTML = '<p style="color:var(--atm-gray);font-style:italic;">Errore nel recupero dal database. Riprova o riformula la domanda.</p>';
   }
 }
 
