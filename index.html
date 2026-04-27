@@ -699,6 +699,28 @@
   .send-btn:hover { background: #CC6C00; }
   .send-btn:disabled { background: var(--atm-gray); cursor: default; }
 
+  .reset-btn {
+    padding: 0;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    color: var(--atm-gray);
+    border: 1px solid var(--rail-color);
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .reset-btn:hover {
+    border-color: var(--atm-orange);
+    color: var(--atm-orange);
+    transform: rotate(-30deg);
+  }
+
   /* MODAL / DETAIL VIEW */
   .detail-overlay {
     display: none;
@@ -1058,6 +1080,7 @@
         ></textarea>
       </div>
       <button class="send-btn" id="sendBtn" onclick="sendMessage()">Invia</button>
+      <button class="reset-btn" onclick="resetConversation()" title="Torna alla home">↺</button>
     </div>
   </div>
 </div>
@@ -1397,6 +1420,50 @@ function askQuestion(q) {
 function filterTheme(theme) {
   document.querySelectorAll('.theme-item').forEach(el => el.classList.remove('active'));
   event.currentTarget.classList.add('active');
+}
+
+function resetConversation() {
+  const area = document.getElementById('conversationArea');
+
+  // Fade out existing messages
+  Array.from(area.children).forEach(el => {
+    if (el.id !== 'welcomeState') {
+      el.style.transition = 'opacity 0.25s';
+      el.style.opacity = '0';
+    }
+  });
+
+  setTimeout(() => {
+    // Remove all messages except welcome state
+    Array.from(area.children).forEach(el => {
+      if (el.id !== 'welcomeState') el.remove();
+    });
+
+    // Restore welcome state
+    const welcome = document.getElementById('welcomeState');
+    if (welcome) {
+      welcome.style.display = '';
+      welcome.style.opacity = '0';
+      welcome.style.transition = 'opacity 0.3s';
+      setTimeout(() => { welcome.style.opacity = '1'; }, 20);
+    }
+
+    // Reset input
+    const input = document.getElementById('queryInput');
+    input.value = '';
+    input.style.height = 'auto';
+
+    // Reset theme sidebar
+    document.querySelectorAll('.theme-item').forEach((el, i) => {
+      el.classList.toggle('active', i === 0);
+    });
+
+    // Reset loading state
+    isLoading = false;
+    document.getElementById('sendBtn').disabled = false;
+
+    area.scrollTop = 0;
+  }, 280);
 }
 
 async function sendMessage() {
