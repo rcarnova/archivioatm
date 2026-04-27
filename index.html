@@ -1011,7 +1011,7 @@
         <div class="decade-label">2025–2026</div>
         <div class="decade-events">
           <div class="decade-event" onclick="askQuestion('Quante persone ha formato PARI sui temi di genere nel 2025?')">2025 — 8.300+ persone formate PARI</div>
-          <div class="decade-event" onclick="askQuestion('Chi è Atika Founoun e qual è la sua storia in ATM?')">2025 — Atika Founoun, prima autista con hijab</div>
+          <div class="decade-event" onclick="askQuestion('Chi è Atika Founoun, prima autista ATM con hijab?')">2025 — Atika Founoun, prima autista con hijab</div>
           <div class="decade-event" onclick="askQuestion('Come si sono evoluti i ruoli delle donne in ATM negli ultimi 80 anni?')">2026 — 80+ anni di memoria e parità</div>
         </div>
       </div>
@@ -1314,6 +1314,15 @@ const archivioData = {
   ],
 
   responses: {
+    "bigliettarie": {
+      text: `Il <strong>18 settembre 1941</strong> l'archivio fotografico ATM documenta un momento di svolta silenziosa: i corsi per bigliettarie. Con l'arruolamento massiccio degli uomini, ATM avvia per la prima volta la formazione di personale femminile per ruoli operativi.
+
+Le fotografie di quel periodo mostrano gruppi di donne in divisa — giacca militare, berretto, borsa a tracolla con il cambiamonete — schierate davanti ai tram o riunite in sala per la cerimonia di diploma. Non sono entrate per scelta ideologica: sono entrate perché la città aveva bisogno del servizio di trasporto e non c'erano più uomini disponibili.
+
+Eppure quella necessità di guerra produce qualcosa di irreversibile: dimostra che le donne <strong>possono</strong> fare quel lavoro. Le fotografie dei corsi del 1941 sono il documento zero della storia femminile in ATM — tutto il resto viene dopo.`,
+      cards: [1, 2, 3],
+      showTimeline: false
+    },
     "evoluzione ruoli": {
       text: `L'archivio ATM racconta un'evoluzione in tre grandi fasi, ciascuna segnata da documenti specifici.
 
@@ -1408,6 +1417,24 @@ La vita delle controllore degli anni '70 era scandita da turni lunghi, mezzi aff
 
 È il decennio in cui lavorare in ATM da donna smette di richiedere una giustificazione.`,
       cards: [5, 6, 3],
+      showTimeline: false
+    },
+    "fracci": {
+      text: `Carla Fracci appare nell'archivio ATM in un documento straordinario: il <strong>Notiziario ATM del 20 novembre 1958</strong>, con la foto sul tram guidato dal padre Luigi Fracci, tranviere ATM.
+
+È un documento che racconta ATM come ascensore sociale: il lavoro del tranviere — fisico, quotidiano, spesso invisibile — che rende possibile il sogno della figlia. La stessa Carla descriveva come la tessera tranviaria gratuita del padre le permettesse di raggiungere la Scala dalla periferia di Milano.
+
+Per le tematiche di genere, il documento ha un doppio valore: mostra sia la centralità del lavoratore ATM (maschile) come pilastro familiare, sia come la mobilità femminile — geografica e professionale — dipendesse da infrastrutture non ancora pensate "per" le donne. Il tram di Luigi Fracci porta Carla alla Scala: è già una storia di libertà femminile, anche se raccontata attraverso gli occhi di un padre.`,
+      cards: [4, 13, 3],
+      showTimeline: false
+    },
+    "atika": {
+      text: `<strong>Atika Founoun</strong>, 45 anni, di origine marocchina, è la prima autista ATM di Milano a guidare con l'hijab. Assunta nel 2025, è entrata in servizio a giugno sui mezzi di superficie — in particolare la <strong>linea 84</strong> — come scelta personale di libertà e per abbattere gli stereotipi sulle donne musulmane nel mondo del lavoro.
+
+La sua storia richiama quella di <strong>Lucia Moreschi</strong>, 82 anni prima: entrambe prime volte in divisa ATM, entrambe portatrici di un cambiamento che va oltre il percorso individuale. La differenza è nella direzione del cambiamento — Lucia guidava per necessità di guerra, Atika guida per scelta. Quella distanza è la misura di quanto l'azienda e la città siano cambiate.
+
+Il ritratto fotografico di Atika davanti a un autobus elettrico ATM — con sullo sfondo la scritta "Formazione Conducenti" — è già un documento d'archivio: il 2025 che risponde al 1943.`,
+      cards: [12, 2, 9],
       showTimeline: false
     },
     "default": {
@@ -1619,10 +1646,6 @@ function generateResponse(query) {
       keywords: ['divisa','unisce','divisa che unisce','campagna 2024','giugno 2024','comunicazione','campagne','quali campagne','campagna atm']
     },
     {
-      key: "fracci",
-      keywords: ['fracci','carla','ballerin','scala','1958','notiziario','ascensore social','padre','luigi']
-    },
-    {
       key: "rinfresco festa",
       keywords: ['rinfresco','festa della donna','porta romana','circolo ricreativo','circolo atm','personale femminile','marzo 1958','8 marzo']
     },
@@ -1633,6 +1656,18 @@ function generateResponse(query) {
     {
       key: "controllore anni 70",
       keywords: ['controllore','anni 70','anni settanta','conducenti anni','vivevano','lavoravano anni']
+    },
+    {
+      key: "atika",
+      keywords: ['atika','founoun','hijab','linea 84','musulman','prima autista','prima donna hijab']
+    },
+    {
+      key: "bigliettarie",
+      keywords: ['bigliettarie','bigliettaria','corsi per','1941','corso bigliettarie','formate 1941','donne 1941','prima guerra','durante la guerra','guerra mondiale atm']
+    },
+    {
+      key: "fracci",
+      keywords: ['fracci','carla','ballerin','scala','1958','notiziario','ascensore social','padre','luigi']
     }
   ];
 
